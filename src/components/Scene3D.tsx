@@ -82,7 +82,13 @@ function ComponentMesh({ component, componentInstance }: any) {
                 <group ref={componentMeshRef} />
                 {component.terminals.map((terminal: any) => <TerminalMesh key={terminal.id} terminal={terminal} componentId={component.id} />)}
             </group>
-            {showTransform && <TransformControls object={containerRef} mode={mode === Mode.DRAG ? 'translate' : 'rotate'} onMouseUp={handleTransformChange} />}
+            {showTransform && containerRef.current && (
+                <TransformControls 
+                    object={containerRef.current} 
+                    mode={mode === Mode.DRAG ? 'translate' : 'rotate'} 
+                    onMouseUp={handleTransformChange} 
+                />
+            )}
         </>
     );
 }

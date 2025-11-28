@@ -36,26 +36,34 @@ export class Battery extends BaseComponent {
     simulate(deltaTime: number, nodeVoltages: Map<string, number>): void {
         if (this.terminals.length < 2) return;
 
+        // Initialize properties with default values if undefined
+        const voltage = this.properties.voltage ?? 12; // Default 12V
+        const internalResistance = this.properties.internalResistance ?? 0.1; // Default 0.1 ohm
+        const capacity = this.properties.capacity ?? 2000; // Default 2000mAh
+        const chargeRemaining = this.properties.chargeRemaining ?? capacity;
+
+        const v1 = nodeVoltages.get(this.terminals[0].id) || 0;
+        const v2 = nodeVoltages.get(this.terminals[1].id) || 0;
         const vPos = nodeVoltages.get(this.terminals[0].id) || 0;
         const vNeg = nodeVoltages.get(this.terminals[1].id) || 0;
 
         // Battery acts as voltage source with internal resistance
-        this.properties.current = (this.properties.voltage - (vPos - vNeg)) / this.properties.internalResistance;
+        this.properties.current = (voltage - (vPos - vNeg)) / internalResistance;
         this.properties.power = Math.abs((vPos - vNeg) * this.properties.current);
 
         // Discharge battery based on current draw
         if (this.properties.current > 0) {
             const chargeUsed = (this.properties.current * deltaTime * 1000) / 3600; // Convert to mAh
-            this.properties.chargeRemaining = Math.max(0, this.properties.chargeRemaining - chargeUsed);
-            this.properties.chargePercent = (this.properties.chargeRemaining / this.properties.capacity) * 100;
+            this.properties.chargeRemaining = Math.max(0, chargeRemaining - chargeUsed);
+            this.properties.chargePercent = (this.properties.chargeRemaining / capacity) * 100;
 
             // Voltage drops as battery depletes
-            const depletionFactor = Math.max(0.7, this.properties.chargePercent / 100);
-            this.properties.voltage = this.properties.voltage * depletionFactor;
+            const depletionFactor = Math.max(0.7, (this.properties.chargePercent ?? 100) / 100);
+            this.properties.voltage = voltage * depletionFactor;
         }
 
-        this.terminals[0].voltage = vPos;
-        this.terminals[1].voltage = vNeg;
+        this.terminals[0].voltage = v1;
+        this.terminals[1].voltage = v2;
         this.terminals[0].current = this.properties.current;
         this.terminals[1].current = -this.properties.current;
     }

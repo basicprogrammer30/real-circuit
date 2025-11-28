@@ -167,13 +167,16 @@ export class LED extends BaseComponent {
 
     checkErrors(): CircuitError[] {
         const errors: CircuitError[] = [];
+        const current = this.properties.current ?? 0;
+        const maxCurrent = this.properties.maxCurrent ?? 0.02;
+        const voltage = this.properties.voltage ?? 0;
 
         // Check for overcurrent
-        if ((this.properties.current || 0) > (this.properties.maxCurrent || 0.02)) {
+        if (current > maxCurrent) {
             errors.push({
                 id: `${this.id}-overcurrent`,
                 severity: ErrorSeverity.ERROR,
-                message: `LED overcurrent: ${(this.properties.current * 1000).toFixed(1)}mA exceeds maximum ${(this.properties.maxCurrent * 1000).toFixed(1)}mA`,
+                message: `LED overcurrent: ${(current * 1000).toFixed(1)}mA exceeds maximum ${(maxCurrent * 1000).toFixed(1)}mA`,
                 componentIds: [this.id],
                 timestamp: Date.now(),
                 stopSimulation: true,
@@ -181,11 +184,11 @@ export class LED extends BaseComponent {
         }
 
         // Check for reverse voltage (simplified - LEDs can be damaged by reverse voltage)
-        if ((this.properties.voltage || 0) < -5) {
+        if (voltage < -5) {
             errors.push({
                 id: `${this.id}-reverse`,
                 severity: ErrorSeverity.WARNING,
-                message: `LED reverse voltage (${this.properties.voltage?.toFixed(1)}V) may damage component`,
+                message: `LED reverse voltage (${voltage?.toFixed(1)}V) may damage component`,
                 componentIds: [this.id],
                 timestamp: Date.now(),
                 stopSimulation: false,

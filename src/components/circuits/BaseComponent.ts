@@ -73,6 +73,7 @@ export abstract class BaseComponent implements ICircuitComponent {
             id: `${this.id}-${name}`,
             componentId: this.id,
             position: this.localToWorld(localPosition),
+            offset: localPosition,
             voltage: 0,
             current: 0,
             name,
